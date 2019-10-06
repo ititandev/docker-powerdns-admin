@@ -2,18 +2,18 @@ version: "3.7"
 
 services:
   powerdns-admin:
-    image: hsrnetwork/powerdns-admin:latest
+    image: ititan/powerdns-admin:v1
     hostname: powerdns-admin
     restart: unless-stopped
     ports:
-      - "9191:9191"
+      - "10.76.0.239:9191:9191"
     # To override the default config.py:
     #volumes:
       #- /path/to/configs/config.py:/powerdns-admin/config.py
     environment:
       SIGNUP_ENABLED: 'False'
       ADMIN_USER: admin
-      ADMIN_USER_PASSWORD: 12345
+      ADMIN_USER_PASSWORD: admin
       SECRET_KEY: I0o3qqd2eQE859gPpVCGm4EYW4fJTVnGnX2dJZ9YIejq20SJ77tW
       LOG_LEVEL: INFO
       SQLA_DB_HOST: powerdns-admin-mysql
@@ -27,12 +27,12 @@ services:
       - powerdns-admin-mysql
 
   powerdns-admin-mysql:
-    image: mysql/mysql-server:8.0.17
+    image: ititan/mysql:powerdns-v1
     hostname: powerdns-admin-db
     restart: unless-stopped
     # To persist the mysql data:
-    #volumes:
-      #- /path/to/mysql/data:/var/lib/mysql
+    volumes:
+      - /opt/pdns/pdns-admin-mysql:/var/lib/mysql
     environment:
       MYSQL_DATABASE: powerdns-admin
       MYSQL_USER: powerdns-admin-svc-user
@@ -43,7 +43,7 @@ services:
       retries: 5
 
   pdns-server:
-    image: psitrax/powerdns:4.1.10
+    image: ititan/powerdns:v1
     hostname: powerdns
     restart: unless-stopped
     ports:
@@ -58,21 +58,21 @@ services:
       MYSQL_HOST: pdns-server-mysql
       MYSQL_DB: powerdns
       MYSQL_USER: powerdns-svc-user
-      MYSQL_PASS: powerdns-svc-user-pw
+      MYSQL_PASS: powerdns-svc-user-pwcf1c27e22e481f7f148422e70955ff8a
     depends_on:
       - pdns-server-mysql
 
   pdns-server-mysql:
-    image: mysql/mysql-server:8.0.17
+    image: ititan/mysql:powerdns-v1
     hostname: powerdns-db
     restart: unless-stopped
     # To persist the mysql data:
-    #volumes:
-      #- /path/to/pdns-mysql/data:/var/lib/mysql
+    volumes:
+      - /opt/pdns/pdns-mysql:/var/lib/mysql
     environment:
       MYSQL_DATABASE: powerdns
       MYSQL_USER: powerdns-svc-user
-      MYSQL_PASSWORD: powerdns-svc-user-pw
+      MYSQL_PASSWORD: powerdns-svc-user-pwcf1c27e22e481f7f148422e70955ff8a
     # Required because otherwise the pdns-server crashes with Authentication plugin 'caching_sha2_password' cannot be loaded: Error loading shared library /usr/lib/mysql/plugin/caching_sha2_password.so: No such file or directory
     command: --default-authentication-plugin=mysql_native_password
     healthcheck:
